@@ -168,12 +168,12 @@ contract OpenZeppelinERC20Test is Test, PropertiesAsserts {
         assert(token.allowance(address(this), addr) == addrInitialAllowance);
     }
 
-    // /** 
-    // *  @dev
-    // *  property ERC20-STDPROP-06 implementation
-    // *
-    // *  zero amount transfer should not break accounting
-    // */ 
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-06 implementation
+    *
+    *  zero amount transfer should not break accounting
+    */ 
     function prove_transferZeroAmount(address usr) public {
         token._mint(address(this), 1);
         token._mint(usr, 2);
