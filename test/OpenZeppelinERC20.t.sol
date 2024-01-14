@@ -681,6 +681,7 @@ contract OpenZeppelinERC20Test is Test, PropertiesAsserts {
     /** 
     *  @dev
     *  property ERC20-STDPROP-22 implementation
+    *
     *  transferFrom should not return false on failure, instead it should revert
     *
     *  in the implementation below, we suppose that the token implementation doesn't allow
@@ -702,4 +703,276 @@ contract OpenZeppelinERC20Test is Test, PropertiesAsserts {
         assert(transferReturn);
     }
     
+
+    /**********************************************************************************************/
+    /*                                                                                            */
+    /*                          TOTALSUPPLY FUNCTION PROPERTIES                                   */
+    /*                                                                                            */
+    /**********************************************************************************************/
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-23 implementation
+    *
+    *  totalSupply calls should always succeed
+    */
+    function prove_totalSupplyAlwaysSucceeds() public {
+        bytes memory payload = abi.encodeWithSignature("totalSupply()");
+        (bool success, ) = address(token).call(payload);
+        assert(success);
+    }  
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-24 implementation
+    *
+    *  totalSupply calls should not change state of variables
+    */
+    function prove_totalSupplyDoesNotChangeState(uint256 amount) public {
+        token._mint(msg.sender, amount);
+        token.approve(msg.sender, amount);
+
+        uint256 initialTotalSupply = token.totalSupply();
+        uint256 initialBalance = token.balanceOf(msg.sender);
+        uint256 initialAllowance = token.allowance(msg.sender, address(this));
+
+        token.totalSupply();
+
+        assertTrue(token.totalSupply() == initialTotalSupply, "Total supply should not change");
+        assertTrue(token.balanceOf(msg.sender) == initialBalance, "Balances should not change");
+        assertTrue(token.allowance(msg.sender, address(this)) == initialAllowance, "Allowances should not change");
+    }
+
+
+    /**********************************************************************************************/
+    /*                                                                                            */
+    /*                            BALANCEOF FUNCTION PROPERTIES                                   */
+    /*                                                                                            */
+    /**********************************************************************************************/
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-25 implementation
+    *
+    *  balanceOf calls should always succeeds
+    */
+    function prove_balanceOfAlwaysSucceeds(address account) public {
+        bytes memory payload = abi.encodeWithSignature("balanceOf(address)", account);
+        (bool success, ) = address(token).call(payload);
+        assert(success);
+    }  
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-26 implementation
+    *
+    *  totalSupply calls should not change state of variables
+    */
+    function prove_balanceOfDoesNotChangeState(address account) public view {
+        uint256 initialBalanceAccount = token.balanceOf(account);
+        uint256 initialTotalSupply = token.totalSupply();
+        uint256 initialBalance = token.balanceOf(msg.sender);
+        uint256 initialAllowance = token.allowance(msg.sender, address(this));
+
+        token.balanceOf(account);
+
+        assert(token.balanceOf(account) == initialBalanceAccount);
+        assert(token.totalSupply() == initialTotalSupply);
+        assert(token.balanceOf(msg.sender) == initialBalance);
+        assert(token.allowance(msg.sender, address(this)) == initialAllowance);
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-27 implementation
+    *
+    *  total balalnce of a user should not be higher than total supply
+    */
+    function prove_balanceOfUserNotHigherThanSupply(address user) public view {
+        uint256 supply = token.totalSupply();
+        uint256 userBalance = token.balanceOf(user);
+        assert(userBalance <= supply);
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-28 implementation
+    *
+    *  total balance of zero address should be zero
+    */
+    function prove_balanceOfZeroAddress() public view {
+        assert(token.balanceOf(address(0)) == 0);
+    }
+
+
+    /**********************************************************************************************/
+    /*                                                                                            */
+    /*                            ALLOWANCE FUNCTION PROPERTIES                                   */
+    /*                                                                                            */
+    /**********************************************************************************************/
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-29 implementation
+    *
+    *  allowance calls should always succeeds
+    */
+    function prove_allowanceAlwaysSucceeds(address account) public {
+        bytes memory payload = abi.encodeWithSignature("allowance(address,address)", msg.sender, account);
+        (bool success, ) = address(token).call(payload);
+        assert(success);
+    }  
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-30 implementation
+    *
+    *  totalSupply calls should not change state of variables
+    */
+    function prove_allowanceDoesNotChangeState(address account) public view {
+        uint256 initialBalanceAccount = token.balanceOf(account);
+        uint256 initialTotalSupply = token.totalSupply();
+        uint256 initialBalance = token.balanceOf(msg.sender);
+        uint256 initialAllowance = token.allowance(msg.sender, account);
+
+        token.allowance(msg.sender, account);
+
+        assert(token.balanceOf(account) == initialBalanceAccount);
+        assert(token.totalSupply() == initialTotalSupply);
+        assert(token.balanceOf(msg.sender) == initialBalance);
+        assert(token.allowance(msg.sender, account) == initialAllowance);
+    }
+
+
+    /**********************************************************************************************/
+    /*                                                                                            */
+    /*                              APPROVE FUNCTION PROPERTIES                                   */
+    /*                                                                                            */
+    /**********************************************************************************************/
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-31 implementation
+    *
+    *  approve calls should succeed if
+    *  - the address in the spender parameter for approve(spender, amount) is not the zero address
+    */
+    function prove_approve(address account, uint256 amount) public {
+        require(account != address(0));
+        
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", account, amount);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        assert(success);
+
+        bool approveReturn = abi.decode(returnData, (bool));
+        assert(approveReturn);
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-32 implementation
+    *
+    *  non-reverting approve calls should update allowance correctly
+    */
+    function prove_approveCorrectAmount(address account, uint256 amount) public {
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", account, amount);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        require(success);
+
+        bool approveReturn = abi.decode(returnData, (bool));
+        assert(approveReturn); 
+        assert(token.allowance(address(this), account) == amount);   
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-33 implementation
+    *
+    *  any number of non-reverting approve calls should update allowance correctly
+    */
+    function prove_approveCorrectAmountTwice(address account, uint256 amount) public {
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", account, amount);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        require(success);
+
+        bool approveReturn = abi.decode(returnData, (bool));
+        assert(approveReturn); 
+        assert(token.allowance(address(this), account) == amount);  
+
+        payload = abi.encodeWithSignature("approve(address,uint256)", account, amount / 2);
+        (success, returnData) = address(token).call(payload);
+        require(success);
+
+        approveReturn = abi.decode(returnData, (bool));
+        assert(approveReturn); 
+        assert(token.allowance(address(this), account) == amount / 2);  
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-34 implementation
+    *
+    *  any non-reverting approve call should 
+    */
+    function prove_approveDoesNotChangeState(address account, uint256 amount) public {
+        address account2 = address(0x10000);
+        address account3 = address(0x20000);
+        require(account != account2);
+        require(account != account3);
+        require(account != msg.sender);
+        require(account2 != account3);
+        require(account2 != msg.sender);
+        require(account3 != msg.sender);
+
+        uint256 supply = token.totalSupply();
+        uint256 account2Balance = token.balanceOf(account2);
+        uint256 account3Balance = token.balanceOf(account3);
+        uint256 allowances = token.allowance(account2, account3);
+
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", account, amount);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        require(success);
+
+        bool approveReturn = abi.decode(returnData, (bool)); 
+        assert(approveReturn);
+
+        assert(token.totalSupply() == supply);
+        assert(token.balanceOf(account2) == account2Balance);
+        assert(token.balanceOf(account3) == account3Balance);
+        assert(token.allowance(account2, account3) == allowances);
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-35 implementation
+    *
+    *  any call to approve where spender is the zero address should revert
+    */
+    function proveFail_approveRevertZeroAddress(uint256 amount) public {
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", address(0), amount);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        assert(success);
+
+        bool approveReturn = abi.decode(returnData, (bool));
+        assert(approveReturn);
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-36 implementation
+    *
+    *  approve should never return false on a fail call
+    */
+    function prove_approveNeverReturnFalse(address account, uint256 amount) public {
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", account, amount);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        
+        bool approveReturn = abi.decode(returnData, (bool));
+        
+        if(success) {
+            assert(approveReturn);
+        } else {
+            assert(approveReturn);
+        }
+    }
 }
