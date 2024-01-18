@@ -53,6 +53,16 @@ Then you simply do
 - `forge build` to compile your files
 - `hevm test` to run your prove tests
 
+#### Example output for a successful run
+```
+Running 1 tests for test/OpenZeppelinERC20.t.sol:OpenZeppelinERC20Test
+Exploring contract
+Simplifying expression
+Explored contract (15 branches)
+Checking for reachability of 12 potential property violation(s)
+[PASS] prove_transferToZeroAddressReverts(uint256,uint256)
+```
+
 ## How to Contribute?
 **Important:** always open an issue before opening a Pull Request to discuss about what you want to include in this repo
 
