@@ -44,7 +44,7 @@ contract OpenZeppelinERC20Test is Test {
     OpenZeppelinERC20 token; // <--- For now you can simply set your token here
 
     function setUp() public {
-        token = new OpenZeppelinERC20(); <--- Don't forget to correctly create it
+        token = new OpenZeppelinERC20(); // <--- Don't forget to correctly create it
     }
 
     // ERC-20 properties implementation below
@@ -53,7 +53,7 @@ Then you simply do
 - `forge build` to compile your files
 - `hevm test` to run your prove tests
 
-#### Example output for a successful run
+#### Example output for a successful test
 ```
 Running 1 tests for test/OpenZeppelinERC20.t.sol:OpenZeppelinERC20Test
 Exploring contract
@@ -61,6 +61,23 @@ Simplifying expression
 Explored contract (15 branches)
 Checking for reachability of 12 potential property violation(s)
 [PASS] prove_transferToZeroAddressReverts(uint256,uint256)
+```
+
+#### Example output for a fail test (it returns a counterexample)
+```
+Running 1 tests for test/OpenZeppelinERC20.t.sol:OpenZeppelinERC20Test
+Exploring contract
+Simplifying expression
+Explored contract (6 branches)
+Checking for reachability of 1 potential property violation(s)
+[FAIL] proveFail_transferToZeroAddress(uint256,uint256)
+
+Failure: proveFail_transferToZeroAddress(uint256,uint256)
+
+  Counterexample:
+  
+    result:   Successful execution
+    calldata: proveFail_transferToZeroAddress(115792089237316195423570985008687907853269984665640564037096400766478308081662,1048576)
 ```
 
 ## How to Contribute?
