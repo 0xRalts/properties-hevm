@@ -1,66 +1,69 @@
-## Foundry
+# Properties hevm
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repository contains implementation of several properties of the Ethereum Token Standards for formal verification using hevm as a tool.
+- [ERC-20 Properties](https://github.com/0xRalts/properties-hevm/blob/main/test/README.md)
 
-Foundry consists of:
+## Installation
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+To run the tests you need to install the following dependencies:
 
-## Documentation
-
-https://book.getfoundry.sh/
+- [foundry](https://github.com/foundry-rs/foundry#installation) (for compiling and easier managment of libs)
+- [hevm](https://github.com/ethereum/hevm?tab=readme-ov-file#installation) (to formally verify our properties)
 
 ## Usage
 
-### Build
+Consider you are using this repository to test your ERC-20 implementation, you should do the following:
 
-```shell
-$ forge build
+First, create your ERC-20 token under `src/contracts/ERC-20/`:
+```Solidity
+// Example ERC-20 Token for OpenZeppelin
+// SPDX-License-Identifier: MIT 
+pragma solidity ^0.8.13;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract OpenZeppelinERC20 is ERC20 {
+    constructor() ERC20("MyToken", "MTK") {}
+
+    function mint(address to, uint256 amount) public {
+        _mint(to, amount);
+    }
+}
 ```
+Then you can simply set your token on `test/OpenZeppelinERC20.t.sol` (this is temporary while hevm solve an issue I submitted)
 
-### Test
+```Solidity
+// Properties tests file
+// SPDX-License-Identifier: MIT 
+pragma solidity ^0.8.13;
 
-```shell
-$ forge test
+import {Test} from "forge-std/Test.sol";
+import {OpenZeppelinERC20} from "src/OpenZeppelinERC20.sol";
+
+contract OpenZeppelinERC20Test is Test {
+    OpenZeppelinERC20 token; // <--- For now you can simply set your token here
+
+    function setUp() public {
+        token = new OpenZeppelinERC20(); <--- Don't forget to correctly create it
+    }
+
+    // ERC-20 properties implementation below
 ```
+Then you simply do
+- `forge build` to compile your files
+- `hevm test` to run your prove tests
 
-### Format
+## How to Contribute?
+**Important:** always open an issue before opening a Pull Request to discuss about what you want to include in this repo
 
-```shell
-$ forge fmt
-```
+To contribute you can consider the following scenarios:
+- Propose new properties for an already implemented token standard (e.g. ERC-20)
+- Include properties implementation for new  token standards
+- Optimization or change of already implemented properties
+- Documentation
 
-### Gas Snapshots
+Please make sure that if you are implementing new properties it succeeds for OpenZeppelin's implementation as it's our baseline for this repo.
 
-```shell
-$ forge snapshot
-```
+## License
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+[MIT](https://github.com/0xRalts/properties-hevm/blob/main/LICENSE)
