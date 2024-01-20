@@ -72,7 +72,7 @@ contract BNB is SafeMath{
     }
 
     /* Send coins */
-    function transfer(address _to, uint256 _value) public returns (bool success){ //added return just by means of testing 
+    function transfer(address _to, uint256 _value) public { //added return just by means of testing 
         if (_to == address(0)) revert();                               // Prevent transfer to 0x0 address. Use burn() instead
 		require (_value > 0); 
         if (balanceOf[msg.sender] < _value) revert();           // Check if the sender has enough

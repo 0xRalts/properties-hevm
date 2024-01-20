@@ -6,18 +6,17 @@
 *   OpenZeppelin's ERC20 token standard implementation
 *   in order to show that it satisfies the properties
 *   defined for our research. 
-*   Those properties will be listed out in a README.md
-*   in the 'test/' folder of this repository, please notice
-*   that it's not possible yet to have many properties tested
-*   because of time limit of my part.
+*   Those properties will be listed out in a PROPERTIES.md
+*   file of this repository, please notice that it's not possible 
+*   yet to have many properties tested because of time limit of my part.
 */
 
 pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
-import {OpenZeppelinERC20} from "src/OpenZeppelinERC20.sol";
+import {OpenZeppelinERC20} from "src/contracts/ERC-20/OpenZeppelinERC20.sol";
 
-contract OpenZeppelinERC20Test is Test {
+contract ERC20PropertiesTest is Test {
     OpenZeppelinERC20 token;
 
     function setUp() public {
@@ -304,14 +303,16 @@ contract OpenZeppelinERC20Test is Test {
     function prove_transferSuccessReturnsTrue(address sender, address receiver, uint256 amount) public {
         token.mint(sender, amount);
         require(amount <= token.balanceOf(sender));
+        require(sender != receiver);
 
-        bytes memory payload = abi.encodeWithSignature("transfer(address,uint256)", receiver, amount);
+        bytes memory payload = abi.encodeWithSignature("transfer(address,uint256)", receiver, amount);  
         vm.prank(sender);
         (bool success, bytes memory returnData) = address(token).call(payload);
         require(success);
 
+        assert(returnData.length > 0); // assures transfer returns something
         bool transferReturn = abi.decode(returnData, (bool));
-        assertTrue(transferReturn);
+        assert(transferReturn);
     }
 
 
@@ -761,8 +762,9 @@ contract OpenZeppelinERC20Test is Test {
         (bool success, bytes memory returnData) = address(token).call(payload);
         require(success);
 
+        assert(returnData.length > 0); // assures transfer returns something
         bool transferFromReturn = abi.decode(returnData, (bool));
-        assertTrue(transferFromReturn);
+        assert(transferFromReturn);
     }
 
 
@@ -906,5 +908,22 @@ contract OpenZeppelinERC20Test is Test {
         } else {
             assert(approveReturn);
         }
+    }
+
+    /** 
+    *  @dev
+    *  property ERC20-STDPROP-33 implementation
+    *
+    *  approve returns true on successful calls
+    */
+    function prove_approveSuccessReturnsTrue(address account, uint256 amount) public {
+        bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", msg.sender, amount);
+        vm.prank(account);
+        (bool success, bytes memory returnData) = address(token).call(payload);
+        require(success);
+
+        assert(returnData.length > 0); //asserts approve returns something
+        bool approveReturn = abi.decode(returnData, (bool));
+        assert(approveReturn); 
     }
 }
