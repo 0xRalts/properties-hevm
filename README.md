@@ -30,7 +30,7 @@ contract OpenZeppelinERC20 is ERC20 {
     }
 }
 ```
-Then you can simply set your token on `test/OpenZeppelinERC20.t.sol` (this is temporary while hevm solve an issue I submitted)
+Then you can simply set your token on `test/ERC20PropertiesTest.t.sol` (this is temporary while hevm solve an issue I submitted)
 
 ```Solidity
 // Properties tests file
@@ -38,9 +38,9 @@ Then you can simply set your token on `test/OpenZeppelinERC20.t.sol` (this is te
 pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
-import {OpenZeppelinERC20} from "src/OpenZeppelinERC20.sol";
+import {OpenZeppelinERC20} from "src/contracts/ERC-20/OpenZeppelinERC20.sol";
 
-contract OpenZeppelinERC20Test is Test {
+contract ERC20PropertiesTest is Test {
     OpenZeppelinERC20 token; // <--- For now you can simply set your token here
 
     function setUp() public {
@@ -55,17 +55,17 @@ Then you simply do
 
 #### Example output for a successful test
 ```
-Running 1 tests for test/OpenZeppelinERC20.t.sol:OpenZeppelinERC20Test
+Running 1 tests for test/ERC20PropertiesTest.t.sol:ERC20PropertiesTest
 Exploring contract
 Simplifying expression
-Explored contract (15 branches)
-Checking for reachability of 12 potential property violation(s)
-[PASS] prove_transferToZeroAddressReverts(uint256,uint256)
+Explored contract (36 branches)
+Checking for reachability of 25 potential property violation(s)
+[PASS] prove_transferSuccessReturnsTrue(address,address,uint256)
 ```
 
 #### Example output for a fail test (it returns a counterexample)
 ```
-Running 1 tests for test/OpenZeppelinERC20.t.sol:OpenZeppelinERC20Test
+Running 1 tests for test/ERC20PropertiesTest.t.sol:ERC20PropertiesTest
 Exploring contract
 Simplifying expression
 Explored contract (6 branches)
