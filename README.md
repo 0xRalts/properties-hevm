@@ -1,7 +1,8 @@
 # Properties hevm
 
 This repository contains implementation of several properties of the Ethereum Token Standards for formal verification using hevm as a tool.
-- [ERC-20 Properties](https://github.com/0xRalts/properties-hevm/blob/main/test/README.md)
+
+- [ERC-20 Properties](https://github.com/0xRalts/properties-hevm/blob/main/PROPERTIES.md#erc-20-token-standard-properties)
 
 ## Installation
 
@@ -15,6 +16,7 @@ To run the tests you need to install the following dependencies:
 Consider you are using this repository to test your ERC-20 implementation, you should do the following:
 
 First, create your ERC-20 token under `src/contracts/ERC-20/`:
+
 ```Solidity
 // Example ERC-20 Token for OpenZeppelin
 // SPDX-License-Identifier: MIT 
@@ -30,6 +32,7 @@ contract OpenZeppelinERC20 is ERC20 {
     }
 }
 ```
+
 Then you can simply set your token on `test/ERC20PropertiesTest.t.sol` (this is temporary while hevm solve an issue I submitted)
 
 ```Solidity
@@ -49,11 +52,14 @@ contract ERC20PropertiesTest is Test {
 
     // ERC-20 properties implementation below
 ```
+
 Then you simply do
+
 - `forge build` to compile your files
 - `hevm test` to run your prove tests
 
-#### Example output for a successful test
+### Example output for a successful test
+
 ```
 Running 1 tests for test/ERC20PropertiesTest.t.sol:ERC20PropertiesTest
 Exploring contract
@@ -64,6 +70,7 @@ Checking for reachability of 25 potential property violation(s)
 ```
 
 #### Example output for a fail test (it returns a counterexample)
+
 ```
 Running 1 tests for test/ERC20PropertiesTest.t.sol:ERC20PropertiesTest
 Exploring contract
@@ -81,9 +88,11 @@ Failure: proveFail_transferToZeroAddress(uint256,uint256)
 ```
 
 ## How to Contribute?
+
 **Important:** always open an issue before opening a Pull Request to discuss about what you want to include in this repo
 
 To contribute you can consider the following scenarios:
+
 - Propose new properties for an already implemented token standard (e.g. ERC-20)
 - Include properties implementation for new  token standards
 - Optimization or change of already implemented properties

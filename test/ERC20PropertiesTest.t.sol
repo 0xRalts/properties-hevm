@@ -34,9 +34,9 @@ contract ERC20PropertiesTest is Test {
     *  property ERC20-STDPROP-01 implementation
     *
     *  transfer succeeds if the following conditions are met:
-    *  - the 'to' address is not the zero address
+    *  - the 'receiver' address is not the zero address
     *  - amount does not exceed the balance of msg.sender  
-    *  - transfering amount to 'to' address does not results in a overflow  
+    *  - transfering amount to 'receiver' address does not results in a overflow  
     */  
     function prove_transfer(address sender, address receiver, uint256 amount) public {
         require(receiver != address(0));
@@ -60,7 +60,7 @@ contract ERC20PropertiesTest is Test {
     *  property ERC20-STDPROP-02 implementation
     *
     *  transfer can succeed in self transfers if the following is met:
-    *  - amount does not exceeds the balance of msg.sender (address(this))
+    *  - amount does not exceeds the balance of sender
     */
     function prove_transferToSelf(address sender, uint256 amount) public {
         require(amount > 0);
@@ -79,25 +79,25 @@ contract ERC20PropertiesTest is Test {
     *  @dev
     *  property ERC20-STDPROP-03 implementation
     *
-    *  transfer should send the correct amount in Non-self transfers:
-    *  - if a transfer call doesn't revert, it must subtract the value 'amount'
-    *  - from the msg.sender and add that same value to the 'to' address
+    *  transfer should send the correct amount in non-self transfers:
+    *  - if a transfer call doesn't revert, it must correctly subtract the 'amount'
+    *  - from the sender and add that same value to the 'receiver'
     */ 
-    function prove_transferCorrectAmount(address sender, address to, uint256 amount) public {
+    function prove_transferCorrectAmount(address sender, address receiver, uint256 amount) public {
         require(amount > 0);
-        require(to != sender);
-        require(to != address(this));
-        require(to != address(0));
+        require(receiver != sender);
+        require(receiver != address(this));
+        require(receiver != address(0));
 
         token.mint(sender, amount);
         uint256 prebalSender = token.balanceOf(sender);
-        uint256 prebalReceiver = token.balanceOf(to);
+        uint256 prebalReceiver = token.balanceOf(receiver);
         require(prebalSender > 0);
 
         vm.prank(sender);
-        token.transfer(to, amount);
+        token.transfer(receiver, amount);
         uint256 postbalSender = token.balanceOf(sender);
-        uint256 postbalReceiver = token.balanceOf(to);
+        uint256 postbalReceiver = token.balanceOf(receiver);
 
         assertTrue(postbalSender == prebalSender - amount);
         assertTrue(postbalReceiver == prebalReceiver + amount);
@@ -109,7 +109,7 @@ contract ERC20PropertiesTest is Test {
     *
     *  transfer should send correct amount in self-transfers:
     *  - if a self-transfer call doesn't revert, it must subtract the value 'amount'
-    *  - from the msg.sender and add that same value to the 'to' address
+    *  - from the 'sender' and add that same value to the 'sender' address
     */ 
     function prove_transferSelfCorrectAmount(address sender, uint256 amount) public {
         require(amount > 1);
@@ -130,14 +130,14 @@ contract ERC20PropertiesTest is Test {
     *  property ERC20-STDPROP-05 implementation
     *
     *  transfer should not have any unexpected state changes on non-revert calls as follows:
-    *  - must only modify the balance of msg.sender (caller) and the address 'to' the transfer is being made 
+    *  - must only modify the balance of 'sender' and 'receiver'
     *  - any other state e.g. allowance, totalSupply, balances of an address not involved in the transfer call
     *  - should not change 
     */ 
-    function prove_transferChangeState(address sender, address to, uint256 amount) public {
+    function prove_transferChangeState(address sender, address receiver, uint256 amount) public {
         require(amount > 0);
-        require(to != address(0));
-        require(to != sender);
+        require(receiver != address(0));
+        require(receiver != sender);
         require(sender != address(0));
         token.mint(sender, amount);
         require(token.balanceOf(sender) > 0);
@@ -146,12 +146,12 @@ contract ERC20PropertiesTest is Test {
         address addr = address(bytes20(keccak256(abi.encode(block.timestamp))));
         require(addr != address(0));
         require(addr != sender);
-        require(addr != to);
+        require(addr != receiver);
         token.mint(addr, amount);
 
         uint256 initialSupply = token.totalSupply();
         uint256 senderInitialBalance = token.balanceOf(sender);
-        uint256 receiverInitialBalance = token.balanceOf(to);
+        uint256 receiverInitialBalance = token.balanceOf(receiver);
 
         uint256 addrInitialBalance = token.balanceOf(addr);
         uint256 allowanceForAddr = 100;
@@ -159,10 +159,10 @@ contract ERC20PropertiesTest is Test {
         uint256 addrInitialAllowance = token.allowance(address(this), addr);
         
         vm.prank(sender);
-        token.transfer(to, amount);
+        token.transfer(receiver, amount);
 
         assertTrue(token.balanceOf(sender) == senderInitialBalance - amount);
-        assertTrue(token.balanceOf(to) == receiverInitialBalance + amount);
+        assertTrue(token.balanceOf(receiver) == receiverInitialBalance + amount);
 
         assertTrue(token.totalSupply() == initialSupply);
         assertTrue(token.balanceOf(addr) == addrInitialBalance);
@@ -205,11 +205,10 @@ contract ERC20PropertiesTest is Test {
         (bool success, bytes memory returnData) = address(token).call(payload);
         assertTrue(!success); //call reverts
 
-        // if it doesn't revert on the transfer call, test will fail because prebal != postbal
         bool transferReturn = abi.decode(returnData, (bool));
         uint256 postbal = token.balanceOf(sender);
         assert(prebal == postbal);
-        assert(!transferReturn); //gotta figure out what to do here
+        assert(!transferReturn);
     }
 
     /** 
@@ -288,10 +287,10 @@ contract ERC20PropertiesTest is Test {
         bytes memory payload = abi.encodeWithSignature("transfer(address,uint256)", receiver, amount);
         vm.prank(sender);
         (bool success, bytes memory returnData) = address(token).call(payload);
-        require(success);
+        assert(!success); // call should revert on failure
 
         bool transferReturn = abi.decode(returnData, (bool));
-        assert(transferReturn); //not the best way to do it, but if it returns false it fails
+        assert(transferReturn); 
     }
 
     /** 
@@ -614,7 +613,7 @@ contract ERC20PropertiesTest is Test {
     *  @dev
     *  property ERC20-STDPROP-20 implementation
     *
-    *  All transferFrom calls where balance is higher than the available should revert
+    *  All transferFrom calls where amount is higher than the available balance should revert
     */ 
     function prove_transferFromNotEnoughBalanceReverts(address from, address to, uint256 amount) public {
         require(amount > 0);
@@ -740,7 +739,7 @@ contract ERC20PropertiesTest is Test {
         bytes memory payload = abi.encodeWithSignature("transferFrom(address,address,uint256)", from, to, amount + 1);
         vm.prank(msg.sender);
         (bool success, bytes memory returnData) = address(token).call(payload);
-        require(success);
+        assertTrue(!success);
 
         bool transferReturn = abi.decode(returnData, (bool));
         assert(transferReturn);
@@ -900,19 +899,15 @@ contract ERC20PropertiesTest is Test {
     function prove_approveNeverReturnFalse(address account, uint256 amount) public {
         bytes memory payload = abi.encodeWithSignature("approve(address,uint256)", account, amount);
         (bool success, bytes memory returnData) = address(token).call(payload);
+        require(success);
         
         bool approveReturn = abi.decode(returnData, (bool));
-        
-        if(success) {
-            assert(approveReturn);
-        } else {
-            assert(approveReturn);
-        }
+        assert(approveReturn);
     }
 
     /** 
     *  @dev
-    *  property ERC20-STDPROP-33 implementation
+    *  property ERC20-STDPROP-31 implementation
     *
     *  approve returns true on successful calls
     */
