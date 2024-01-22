@@ -57,6 +57,7 @@ Then you simply do
 
 - `forge build` to compile your files
 - `hevm test` to run your prove tests
+- you can also do `hevm test --match functionName` if you want to run a specific property
 
 ### Example output for a successful test
 
