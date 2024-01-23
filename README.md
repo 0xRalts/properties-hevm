@@ -1,6 +1,7 @@
 # Properties hevm
 
 This repository contains implementation of several properties of the Ethereum Token Standards for formal verification using hevm as a tool.
+DISCLAIMER: This is part of a research for a final thesis for university graduation, so do not take this as a final version or as a fail-safe proof method. Any support and help is appreciated.
 
 - [ERC-20 Properties](https://github.com/0xRalts/properties-hevm/blob/main/PROPERTIES.md#erc-20-token-standard-properties)
 
